@@ -31,8 +31,8 @@ public class NormalizerBolt extends BaseBasicBolt {
      2. remove the common words
 
     ------------------------------------------------- */
-	  String word = tuple.getString(0).toLowerCase();
-	  if (!commonWords.contains(word)){
+	  String word = tuple.getString(0).toLowerCase().trim();
+	  if (!word.isEmpty() && !commonWords.contains(word)){
 	   	Integer count = counts.get(word);
 		if (count == null)
 			count = 0;
