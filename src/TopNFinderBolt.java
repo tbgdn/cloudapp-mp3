@@ -6,12 +6,14 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
 import java.util.HashMap;
+import java.util.TreeSet;
 
 /**
  * a bolt that finds the top n words.
  */
 public class TopNFinderBolt extends BaseBasicBolt {
   private HashMap<String, Integer> currentTopWords = new HashMap<String, Integer>();
+	private TreeSet<Pair<Integer, String>> topWords = new TreeSet<Pair<Integer, String>>();
   private int N;
 
   private long intervalToReport = 20;
@@ -29,6 +31,13 @@ public class TopNFinderBolt extends BaseBasicBolt {
 
 
     ------------------------------------------------- */
+	  topWords.add(new Pair<Integer, String>(tuple.getInteger(1), tuple.getString(0)));
+	  if (topWords.size() > N){
+		  String removedWord = topWords.first().second;
+		  topWords.remove(topWords.first());
+		  currentTopWords.remove(removedWord);
+	  }
+	  currentTopWords.put(tuple.getString(0), tuple.getInteger(1));
 
 
     //reports the top N words periodically
@@ -58,4 +67,57 @@ public class TopNFinderBolt extends BaseBasicBolt {
     return stringBuilder.toString();
 
   }
+
+	private static class Pair<A extends Comparable<? super A>,
+					  B extends Comparable<? super B>>
+			implements Comparable<Pair<A, B>> {
+
+		public final A first;
+		public final B second;
+
+		public Pair(A first, B second) {
+			this.first = first;
+			this.second = second;
+		}
+
+		public static <A extends Comparable<? super A>,
+							  B extends Comparable<? super B>>
+		Pair<A, B> of(A first, B second) {
+			return new Pair<A, B>(first, second);
+		}
+
+		@Override
+		public int compareTo(Pair<A, B> o) {
+			int cmp = o == null ? 1 : (this.first).compareTo(o.first);
+			return cmp == 0 ? (this.second).compareTo(o.second) : cmp;
+		}
+
+		@Override
+		public int hashCode() {
+			return 31 * hashcode(first) + hashcode(second);
+		}
+
+		private static int hashcode(Object o) {
+			return o == null ? 0 : o.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (!(obj instanceof Pair))
+				return false;
+			if (this == obj)
+				return true;
+			return equal(first, ((Pair<?, ?>) obj).first)
+						   && equal(second, ((Pair<?, ?>) obj).second);
+		}
+
+		private boolean equal(Object o1, Object o2) {
+			return o1 == o2 || (o1 != null && o1.equals(o2));
+		}
+
+		@Override
+		public String toString() {
+			return "(" + first + ", " + second + ')';
+		}
+	}
 }
