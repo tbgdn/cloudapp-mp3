@@ -6,7 +6,9 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A bolt that normalizes the words, by removing common words and making them lower case.
@@ -17,6 +19,7 @@ public class NormalizerBolt extends BaseBasicBolt {
       "for", "on", "with", "he", "she", "as", "you", "do", "this", "but", "his",
       "by", "from", "they", "we", "her", "or", "will", "my", "one", "all", "s", "if",
       "any", "our", "may", "your", "these", "d" , " ", "me" , "so" , "what" , "him" );
+	Map<String, Integer> counts = new HashMap<String, Integer>();
 
   @Override
   public void execute(Tuple tuple, BasicOutputCollector collector) {
@@ -28,7 +31,15 @@ public class NormalizerBolt extends BaseBasicBolt {
      2. remove the common words
 
     ------------------------------------------------- */
-
+	  String word = tuple.getString(0).toLowerCase();
+	  if (!commonWords.contains(word)){
+	   	Integer count = counts.get(word);
+		if (count == null)
+			count = 0;
+		count += 1;
+		counts.put(word, count);
+	  	collector.emit(new Values(word, count));
+	  }
 
   }
 
