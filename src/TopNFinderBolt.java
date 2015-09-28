@@ -33,11 +33,12 @@ public class TopNFinderBolt extends BaseBasicBolt {
     ------------------------------------------------- */
 	  topWords.add(new Pair<Integer, String>(tuple.getInteger(1), tuple.getString(0)));
 	  if (topWords.size() > N){
-		  String removedWord = topWords.first().second;
 		  topWords.remove(topWords.first());
-		  currentTopWords.remove(removedWord);
 	  }
-	  currentTopWords.put(tuple.getString(0), tuple.getInteger(1));
+	  currentTopWords.clear();
+	  for (Pair<Integer, String> pair: topWords){
+		  currentTopWords.put(pair.second, pair.first);
+	  }
 
 
     //reports the top N words periodically
