@@ -49,7 +49,7 @@ public class TopWordFinderTopologyPartD {
 	  builder.setBolt("split", new SplitSentenceBolt(), 8).shuffleGrouping("spout");
 	  builder.setBolt("normalize", new NormalizerBolt(), 12).fieldsGrouping("split", new Fields("word"));
 	  builder.setBolt("count", new WordCountBolt(), 12).fieldsGrouping("normalize", new Fields("word"));
-	  builder.setBolt("top-n", new NormalizerBolt(), 12).fieldsGrouping("count", new Fields("word", "count"));
+	  builder.setBolt("top-n", new TopNFinderBolt(N), 12).fieldsGrouping("count", new Fields("word", "count"));
 
 
     config.setMaxTaskParallelism(3);
