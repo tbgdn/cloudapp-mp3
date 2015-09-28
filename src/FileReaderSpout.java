@@ -11,37 +11,49 @@ import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
+import backtype.storm.utils.Utils;
+
+import javax.rmi.CORBA.Util;
 
 public class FileReaderSpout implements IRichSpout {
   private SpoutOutputCollector _collector;
   private TopologyContext context;
+	private BufferedReader reader;
+	private String inputFilePath;
+
+	public FileReaderSpout(String filePath){
+		this.inputFilePath = filePath;
+	}
 
 
   @Override
   public void open(Map conf, TopologyContext context,
                    SpoutOutputCollector collector) {
 
-     /*
-    ----------------------TODO-----------------------
-    Task: initialize the file reader
-
-
-    ------------------------------------------------- */
-
-    this.context = context;
+	  try {
+		  reader = new BufferedReader(new FileReader(this.inputFilePath));
+	  } catch (FileNotFoundException e) {
+		  e.printStackTrace();
+	  }
+	  this.context = context;
     this._collector = collector;
   }
 
   @Override
   public void nextTuple() {
 
-     /*
-    ----------------------TODO-----------------------
-    Task:
-    1. read the next line and emit a tuple for it
-    2. don't forget to sleep when the file is entirely read to prevent a busy-loop
-
-    ------------------------------------------------- */
+	  String line = null;
+	  try {
+		  line = reader.readLine();
+		  if (line == null){
+			  Utils.sleep(2000);
+		  }else{
+			  _collector.emit(new Values(line));
+		  }
+	  } catch (IOException e) {
+		  e.printStackTrace();
+		  Utils.sleep(2000);
+	  }
 
 
   }
@@ -55,13 +67,11 @@ public class FileReaderSpout implements IRichSpout {
 
   @Override
   public void close() {
-   /*
-    ----------------------TODO-----------------------
-    Task: close the file
-
-
-    ------------------------------------------------- */
-
+	  try {
+		  reader.close();
+	  } catch (IOException e) {
+		  e.printStackTrace();
+	  }
   }
 
 

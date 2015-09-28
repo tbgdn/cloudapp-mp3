@@ -37,6 +37,13 @@ public class TopWordFinderTopologyPartB {
 
 
     ------------------------------------------------- */
+	  String inputFilePath = "data.txt";
+	  if (args.length >= 1 && !args[0].trim().isEmpty()){
+		  inputFilePath = args[0].trim();
+	  }
+	  builder.setSpout("spout", new FileReaderSpout(inputFilePath), 1);
+	  builder.setBolt("split", new SplitSentenceBolt(), 8).shuffleGrouping("spout");
+	  builder.setBolt("count", new WordCountBolt(), 12).fieldsGrouping("split", new Fields("word"));
 
 
     config.setMaxTaskParallelism(3);
